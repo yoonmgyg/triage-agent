@@ -1,6 +1,0 @@
-fastapi
-uvicorn
-pytest
-earthshaker
-pydantic-settings
-httpx
