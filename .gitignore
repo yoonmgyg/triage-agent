@@ -1,0 +1,9 @@
+venv313/
+.ab/
+__pycache__/
+*.pyc
+.git/
+!/.git
+**/__pycache__/
+.DS_Store
+*.log

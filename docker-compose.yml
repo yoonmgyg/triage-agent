@@ -1,0 +1,11 @@
+services:
+  green-agent:
+    build: .
+    ports:
+      - "8010:8010"
+    volumes:
+      - ./.ab:/app/.ab
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8010
+    restart: unless-stopped
