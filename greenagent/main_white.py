@@ -1,7 +1,7 @@
 import os
 import uvicorn
 from fastapi import FastAPI
-from greenagent.purpleagent import HealthcareTriageAgent, Message
+from purpleagent import HealthcareTriageAgent, Message
 
 app = FastAPI(title="White Agent")
 agent = HealthcareTriageAgent()

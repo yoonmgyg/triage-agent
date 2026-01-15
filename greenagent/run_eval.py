@@ -4,7 +4,7 @@ from healthcare_data import list_patients
 from simulation_env import HealthcareSimulationEnvironment
 from scenarios import get_healthcare_scenarios
 from purpleagent import HealthcareTriageAgent
-from greenagent import HealthcareTriageEvaluator  
+from evaluator_logic import HealthcareTriageEvaluator
 
 
 def run_single_eval() -> Dict[str, Any]:

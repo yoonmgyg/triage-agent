@@ -4,7 +4,7 @@ import json
 import time
 import httpx
 from fastapi import FastAPI
-from greenagent import HealthcareTriageEvaluator, TaskRequest as GreenTaskRequest
+from evaluator_logic import HealthcareTriageEvaluator, TaskRequest as GreenTaskRequest
 
 class AgentBeatsA2AClient:
     def __init__(self, controller_url="http://localhost:8010"):
