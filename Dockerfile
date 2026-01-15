@@ -1,22 +1,16 @@
-FROM python:3.13-slim
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm
 
-WORKDIR /app
+RUN adduser agent
+USER agent
+WORKDIR /home/agent
 
-RUN apt-get update && apt-get install -y procps && rm -rf /var/lib/apt/lists/*
+COPY pyproject.toml uv.lock README.md ./
+COPY src src
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN \
+    --mount=type=cache,target=/home/agent/.cache/uv,uid=1000 \
+    uv sync --locked
 
-COPY . .
-
-RUN sed -i 's/\r$//' run.sh && chmod +x run.sh
-
-RUN python apply_fix.py
-
-EXPOSE 8010
-
-ENV PYTHONUNBUFFERED=1
-ENV HOST=0.0.0.0
-ENV PORT=8010
-
-CMD ["agentbeats", "run_ctrl"]
+ENTRYPOINT ["uv", "run", "src/server.py"]
+CMD ["--host", "0.0.0.0"]
+EXPOSE 9009
