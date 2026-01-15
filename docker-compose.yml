@@ -8,4 +8,5 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=8010
+      - WEBHOOK_URL=https://agentbeats.dev/api/hook/v2/019bc293-e6a4-7803-9b11-978ac04a90ee
     restart: unless-stopped

@@ -82,6 +82,16 @@ async def handle_task(request: dict):
     
     result = wrapper.handle_task(task_id, config, participants)
     
+    webhook_url = os.environ.get("WEBHOOK_URL")
+    if webhook_url:
+        try:
+            report_payload = next((json.loads(a.content) for a in result.artifacts if a.name == "results.json"), None)
+            if report_payload:
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    await client.post(webhook_url, json=report_payload)
+        except Exception as e:
+            print(f"Webhook error: {e}")
+    
     return {
         "task_id": result.task_id,
         "artifacts": [
