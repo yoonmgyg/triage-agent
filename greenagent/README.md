@@ -87,5 +87,26 @@ The benchmark covers 7 representative scenarios including Cardiac, Neurological,
 - `trigger_agentbeats_eval.py`: Automated orchestration script for end-to-end reproducibility.
 - `run.sh` / `run.bat`: Platform-specific execution wrappers.
 
+## Public Image Hosting (Required for Submission)
+To provide a **fully qualified image**, you must push your local container to a public registry (e.g., Docker Hub or GitHub Container Registry).
+
+1. **Login to your registry:**
+   ```bash
+   docker login ghcr.io  # or just 'docker login' for Docker Hub
+   ```
+
+2. **Tag your local image:**
+   Replace `<username>` with your actual registry username.
+   ```bash
+   docker tag agent-green-agent:latest ghcr.io/<username>/healthcare-triage-benchmark:latest
+   ```
+
+3. **Push to the registry:**
+   ```bash
+   docker push ghcr.io/<username>/healthcare-triage-benchmark:latest
+   ```
+
+**Your Fully Qualified Image:** `ghcr.io/<username>/healthcare-triage-benchmark:latest`
+
 ## Reproducibility Evidence
 This benchmark consistently produces a **100% pass rate** for the baseline White Agent. You can verify this by running `trigger_agentbeats_eval.py` multiple times; the results are deterministic based on the rule-based participant's logic and the Green Agent's scoring heuristics.

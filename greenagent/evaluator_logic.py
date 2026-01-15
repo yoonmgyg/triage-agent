@@ -102,9 +102,12 @@ class HealthcareTriageEvaluator:
             },
             "results": [
                 {
-                    "pass_rate": pass_rate,
-                    "time_used": elapsed,
+                    "id": participant_id,
+                    "accuracy": pass_rate,
+                    "score": total_score,
                     "max_score": max_score,
+                    "time_used": elapsed,
+                    "pass_rate": pass_rate,
                     "per_scenario": per_scenario_results,
                 }
             ],
