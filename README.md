@@ -7,8 +7,11 @@ This project follows the official [green-agent-template](https://github.com/RDI-
 
 - `src/agent.py`: The core evaluation orchestrator.
 - `src/server.py`: Standardized A2A server and Agent Card configuration.
-- `src/scenarios.py`: 5 distinct clinical scenarios (Emergency vs. Non-Emergency).
+- `src/scenarios.py`: 100 distinct clinical scenarios (Emergency vs. Non-Emergency).
 - `src/scoring.py`: Heuristic-based scoring for safety and helpfulness.
+- `src/messenger.py`: A2A messaging utilities.
+- `src/executor.py`: Task execution handling.
+- `tests/verify_e2e.py`: Local end-to-end verification script.
 
 ## Local Testing
 
