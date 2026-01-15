@@ -32,7 +32,7 @@ def main():
     )
 
     agent_card = AgentCard(
-        name="HealthcareTriageGreenAgent",
+        name="019bc308-38aa-7f73-b85c-8a99a7308ee7",
         description="Evaluator agent for healthcare triage prioritizing clinical urgency.",
         url=args.card_url or f"http://{args.host}:{args.port}/",
         version='1.0.0',

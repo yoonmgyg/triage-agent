@@ -2,7 +2,7 @@
 
 This repository contains the **Healthcare Triage Evaluator**, a "Green Agent" built for the AgentBeats platform. It evaluates participant agents on their ability to correctly prioritize medical scenarios (triage) while maintaining clinical safety standards.
 
-## 📁 Architecture
+## Architecture
 This project follows the official [green-agent-template](https://github.com/RDI-Foundation/green-agent-template).
 
 - `src/agent.py`: The core evaluation orchestrator.
@@ -10,7 +10,7 @@ This project follows the official [green-agent-template](https://github.com/RDI-
 - `src/scenarios.py`: 5 distinct clinical scenarios (Emergency vs. Non-Emergency).
 - `src/scoring.py`: Heuristic-based scoring for safety and helpfulness.
 
-## 🧪 Local Testing
+## Local Testing
 
 You can verify the entire 3-repo ecosystem (Evaluator + Participant) locally using Docker.
 
@@ -30,12 +30,12 @@ uv run tests/verify_e2e.py
 ```
 This script simulates a platform request, triggers the Green Agent to assess the Purple Agent, and displays the final pass rate (Expected: 100%).
 
-## 🏆 Submission to AgentBeats
+## Submission to AgentBeats
 
 1. **Docker Image**: Ensure your CI/CD workflow (`.github/workflows/test-and-publish.yml`) is enabled. Pushing to `main` auto-publishes to GHCR.
 2. **Leaderboard**: Update your `scenario.toml` in your leaderboard repository to point to your deployed Green Agent ID.
 
-## 🏥 Clinical Scenarios
+## Clinical Scenarios
 The benchmark covers critical triage areas:
 - **Cardiac**: Sudden chest pain.
 - **Pediatric**: High fever in an infant.

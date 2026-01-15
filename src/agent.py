@@ -108,20 +108,13 @@ class Agent:
         pass_rate = total_score / max_score if max_score > 0 else 0.0
 
         results_payload = {
-            "participants": {
-                "agent": participant_url
-            },
-            "results": [
-                {
-                    "id": participant_url,
-                    "accuracy": pass_rate,
-                    "score": total_score,
-                    "max_score": max_score,
-                    "time_used": elapsed,
-                    "pass_rate": pass_rate,
-                    "per_scenario": per_scenario_results,
-                }
-            ],
+            "id": participant_url,
+            "accuracy": pass_rate,
+            "score": total_score,
+            "max_score": max_score,
+            "time_used": elapsed,
+            "pass_rate": pass_rate,
+            "per_scenario": per_scenario_results,
         }
 
         await updater.add_artifact(

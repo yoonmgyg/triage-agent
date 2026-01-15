@@ -64,30 +64,30 @@ async def send_message(
             await client.add_event_consumer(consumer)
 
         outbound_msg = create_message(text=message, context_id=context_id)
-        last_event = None
-        outputs = {"response": "", "context_id": None}
+        outputs = {"response": "", "context_id": None, "status": "completed"}
 
-        # if streaming == False, only one event is generated
         async for event in client.send_message(outbound_msg):
-            last_event = event
-
-        match last_event:
-            case Message() as msg:
-                outputs["context_id"] = msg.context_id
-                outputs["response"] += merge_parts(msg.parts)
-
-            case (task, update):
-                outputs["context_id"] = task.context_id
-                outputs["status"] = task.status.state.value
-                msg = task.status.message
-                if msg:
+            match event:
+                case Message() as msg:
+                    outputs["context_id"] = msg.context_id
                     outputs["response"] += merge_parts(msg.parts)
-                if task.artifacts:
-                    for artifact in task.artifacts:
-                        outputs["response"] += merge_parts(artifact.parts)
+                
+                case (task, update):
+                    # Status updates
+                    outputs["context_id"] = task.context_id
+                    outputs["status"] = task.status.state.value
+                    if update and update.message:
+                        outputs["response"] += merge_parts(update.message.parts)
+                    # Also check terminal task status message
+                    if task.status.message:
+                        outputs["response"] += merge_parts(task.status.message.parts)
+                    # Accumulate artifacts if they appear in the task object
+                    if task.artifacts:
+                        for artifact in task.artifacts:
+                            outputs["response"] += merge_parts(artifact.parts)
 
-            case _:
-                pass
+                case _ if hasattr(event, "artifact"): # ArtifactUpdate
+                    outputs["response"] += merge_parts(event.artifact.parts)
 
         return outputs
 
