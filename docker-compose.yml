@@ -1,0 +1,24 @@
+services:
+  evaluator:
+    build: .
+    ports:
+      - "9010:9009"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=9009
+    networks:
+      - agent-net
+
+  participant:
+    build: ../triage-participant
+    ports:
+      - "9009:9009"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=9009
+    networks:
+      - agent-net
+
+networks:
+  agent-net:
+    driver: bridge
