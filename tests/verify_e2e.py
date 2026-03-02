@@ -7,11 +7,11 @@ from a2a.types import Message, Role, Part, TextPart, Task
 
 async def verify_benchmark():
     evaluator_url = "http://localhost:9010"
-    participant_url = "http://participant:9009"
+    participant_url = "http://localhost:9009"
 
     print("Starting End-to-End Verification...")
     
-    async with httpx.AsyncClient(timeout=30.0) as httpx_client:
+    async with httpx.AsyncClient(timeout=300.0) as httpx_client:
         # 1. Resolve Evaluator Card
         resolver = A2ACardResolver(httpx_client=httpx_client, base_url=evaluator_url)
         try:
