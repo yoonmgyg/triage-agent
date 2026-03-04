@@ -6,7 +6,6 @@ from a2a.client import (
     A2ACardResolver,
     ClientConfig,
     ClientFactory,
-    Consumer,
 )
 from a2a.types import (
     Message,
@@ -16,9 +15,7 @@ from a2a.types import (
     DataPart,
 )
 
-
 DEFAULT_TIMEOUT = 300
-
 
 def create_message(
     *, role: Role = Role.user, text: str, context_id: str | None = None
@@ -31,7 +28,6 @@ def create_message(
         context_id=context_id,
     )
 
-
 def merge_parts(parts: list[Part]) -> str:
     chunks = []
     for part in parts:
@@ -41,60 +37,24 @@ def merge_parts(parts: list[Part]) -> str:
             chunks.append(json.dumps(part.root.data, indent=2))
     return "\n".join(chunks)
 
-
-async def send_message(
-    message: str,
-    base_url: str,
-    context_id: str | None = None,
-    streaming: bool = False,
-    timeout: int = DEFAULT_TIMEOUT,
-    consumer: Consumer | None = None,
-):
-    """Returns dict with context_id, response and status (if exists)"""
-    async with httpx.AsyncClient(timeout=timeout) as httpx_client:
-        resolver = A2ACardResolver(httpx_client=httpx_client, base_url=base_url)
-        agent_card = await resolver.get_agent_card()
-        config = ClientConfig(
-            httpx_client=httpx_client,
-            streaming=streaming,
-        )
-        factory = ClientFactory(config)
-        client = factory.create(agent_card)
-        if consumer:
-            await client.add_event_consumer(consumer)
-
-        outbound_msg = create_message(text=message, context_id=context_id)
-        outputs = {"response": "", "context_id": None, "status": "completed"}
-
-        async for event in client.send_message(outbound_msg):
-            match event:
-                case Message() as msg:
-                    outputs["context_id"] = msg.context_id
-                    outputs["response"] += merge_parts(msg.parts)
-                
-                case (task, update):
-                    # Status updates
-                    outputs["context_id"] = task.context_id
-                    outputs["status"] = task.status.state.value
-                    if update and update.message:
-                        outputs["response"] += merge_parts(update.message.parts)
-                    # Also check terminal task status message
-                    if task.status.message:
-                        outputs["response"] += merge_parts(task.status.message.parts)
-                    # Accumulate artifacts if they appear in the task object
-                    if task.artifacts:
-                        for artifact in task.artifacts:
-                            outputs["response"] += merge_parts(artifact.parts)
-
-                case _ if hasattr(event, "artifact"): # ArtifactUpdate
-                    outputs["response"] += merge_parts(event.artifact.parts)
-
-        return outputs
-
-
 class Messenger:
     def __init__(self):
         self._context_ids = {}
+        self._httpx_client = None
+        self._clients = {}
+
+    async def _get_client(self, url: str):
+        if self._httpx_client is None:
+            self._httpx_client = httpx.AsyncClient(timeout=DEFAULT_TIMEOUT)
+        
+        if url not in self._clients:
+            resolver = A2ACardResolver(httpx_client=self._httpx_client, base_url=url)
+            agent_card = await resolver.get_agent_card()
+            config = ClientConfig(httpx_client=self._httpx_client, streaming=False)
+            factory = ClientFactory(config)
+            self._clients[url] = factory.create(agent_card)
+        
+        return self._clients[url]
 
     async def talk_to_agent(
         self,
@@ -105,22 +65,33 @@ class Messenger:
     ):
         """
         Communicate with another agent by sending a message and receiving their response.
-
-        Args:
-            message: The message to send to the agent
-            url: The agent's URL endpoint
-            new_conversation: If True, start fresh conversation; if False, continue existing conversation
-            timeout: Timeout in seconds for the request (default: 300)
-
-        Returns:
-            str: The agent's response message
         """
-        outputs = await send_message(
-            message=message,
-            base_url=url,
-            context_id=None if new_conversation else self._context_ids.get(url, None),
-            timeout=timeout,
-        )
+        client = await self._get_client(url)
+        context_id = None if new_conversation else self._context_ids.get(url, None)
+        outbound_msg = create_message(text=message, context_id=context_id)
+        
+        outputs = {"response": "", "context_id": None, "status": "completed"}
+
+        async for event in client.send_message(outbound_msg):
+            match event:
+                case Message() as msg:
+                    outputs["context_id"] = msg.context_id
+                    outputs["response"] += merge_parts(msg.parts)
+                
+                case (task, update):
+                    outputs["context_id"] = task.context_id
+                    outputs["status"] = task.status.state.value
+                    if update and update.message:
+                        outputs["response"] += merge_parts(update.message.parts)
+                    if task.status.message:
+                        outputs["response"] += merge_parts(task.status.message.parts)
+                    if task.artifacts:
+                        for artifact in task.artifacts:
+                            outputs["response"] += merge_parts(artifact.parts)
+
+                case _ if hasattr(event, "artifact"): # ArtifactUpdate
+                    outputs["response"] += merge_parts(event.artifact.parts)
+
         if outputs.get("status", "completed") != "completed":
             raise RuntimeError(f"{url} responded with: {outputs}")
         self._context_ids[url] = outputs.get("context_id", None)
@@ -128,3 +99,9 @@ class Messenger:
 
     def reset(self):
         self._context_ids = {}
+
+    async def close(self):
+        if self._httpx_client:
+            await self._httpx_client.aclose()
+            self._httpx_client = None
+            self._clients = {}
